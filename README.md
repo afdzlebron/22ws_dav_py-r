@@ -16,9 +16,9 @@ Ziel des Projekts war es, die erlernten Fähigkeiten zur Datenvisualisierung anz
 
 ## Projektstruktur:
 
-    data: Enthält die verwendeten Datensätze.
-    src: Enthält den Quellcode für das Dashboard.
-    report: Enthält Berichte oder Präsentationen zum Projekt.
+    Dashboard-01: Enthält die verwendeten Datensätze, Quellcode für das Dashboard.
+    Dashboard-02: Enthält die verwendeten Datensätze, Quellcode für das Dashboard.
+    
 
 ## Installation:
 
@@ -26,8 +26,12 @@ Alle relevante Pakette, bitte installieren.
 
 ## Lernpunkte:
 
-    Erlernen von interaktiven Visualisierungen mit Plotly", "Effiziente Datenmanipulation mit Pandas"
+    Erlernen von interaktiven Visualisierungen mit Plotly
+    Effiziente Datenmanipulation mit Pandas
 
 ## Disclaimer:
 
 Dieses Projekt dient ausschließlich zur Dokumentation und dient nicht kommerziellen Zwecken.
+
+## Autor: 
+    AFL
