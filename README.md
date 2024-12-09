@@ -34,4 +34,4 @@ Alle relevante Libraries (s. oben Technologien).
 Dieses Projekt dient ausschließlich zur Dokumentation und dient nicht kommerziellen Zwecken.
 
 ## Autor: 
-    AFL
+    AFL et al.
