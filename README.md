@@ -6,7 +6,7 @@ Dieses Repository enthält das finale Projekt für den Kurs "Datenvisualisierung
 
 ## Ziel:
 
-Ziel des Projekts war es, die erlernten Fähigkeiten zur Datenvisualisierung anzuwenden, um komplexe Datensätze in aussagekräftige und interaktive Visualisierungen umzuwandeln. Das Dashboard ermöglicht es, die Daten zu explorieren und Erkenntnisse zu gewinnen.
+Ziel des Projekts war es, die erlernten Fähigkeiten zur Datenvisualisierung anzuwenden, um Datensätze in aussagekräftige und interaktive Visualisierungen umzuwandeln. Das Dashboard ermöglicht es, die Daten zu explorieren und Erkenntnisse zu gewinnen.
 
 ## Technologien:
 
@@ -22,7 +22,7 @@ Ziel des Projekts war es, die erlernten Fähigkeiten zur Datenvisualisierung anz
 
 ## Installation:
 
-Alle relevante Pakette, bitte installieren. 
+Alle relevante Libraries (s. oben Technologien). 
 
 ## Lernpunkte:
 
