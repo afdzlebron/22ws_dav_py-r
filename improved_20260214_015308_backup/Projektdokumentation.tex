@@ -1,0 +1,244 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage{geometry}
+\geometry{margin=2.2cm}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+\usepackage{hyperref}
+\usepackage{float}
+
+\lstdefinestyle{shared}{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue!60!black},
+  commentstyle=\color{green!40!black},
+  stringstyle=\color{orange!60!black},
+  numbers=left,
+  numberstyle=\scriptsize\color{gray},
+  stepnumber=1,
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single
+}
+
+\title{Technische Dokumentation der Dashboards\\
+\large Datenvisualisierungsprojekt (WS 2022/2023)}
+\author{AFL et al.}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Zielsetzung}
+Dieses Projekt vereint zwei interaktive Analyseanwendungen:
+\begin{itemize}
+  \item ein Python/Dash-Dashboard für Einzelhandelsumsätze (\texttt{Dashboard-01}),
+  \item ein R/Shiny-Dashboard für den europäischen Flugverkehr (\texttt{Dashboard-02}).
+\end{itemize}
+
+Die überarbeitete Version fokussiert auf Robustheit, reproduzierbare Ausführung und bessere Wartbarkeit.
+
+\section{Dateiübersicht und Aufgaben}
+\begin{longtable}{p{0.35\linewidth} p{0.58\linewidth}}
+\toprule
+\textbf{Datei} & \textbf{Funktion} \\
+\midrule
+\texttt{Dashboard-01/app.py} & Python-Dash-Anwendung mit Monatsvergleich, KPI-Karten und Store-Ranking. \\
+\texttt{Dashboard-01/*.csv} & Datengrundlage für Monats-, Wochen-, Feiertags- und Filialumsätze. \\
+\texttt{Dashboard-02/db.R} & R-Shiny-Anwendung mit reaktiver Länderfilterung des Flugverkehrs. \\
+\texttt{Dashboard-02/fluege.csv} & Zeitreihe der wöchentlichen Fluganzahl pro Land. \\
+\texttt{README.md} & Projektdokumentation mit Setup- und Startanleitung. \\
+\bottomrule
+\end{longtable}
+
+\section{Dashboard-01: Python/Dash}
+\subsection{Funktionale Beschreibung}
+Die Anwendung lädt mehrere Umsatzdatensätze, prüft die benötigten Spalten und erzeugt daraus vier UI-Bereiche:
+\begin{itemize}
+  \item Monat-Auswahl (Basis und Referenz),
+  \item KPI-Karte "Gesamtumsatz",
+  \item KPI-Karte "Ferienumsatz",
+  \item Vergleichsvisualisierungen für Wochenverlauf und Top-Filialen.
+\end{itemize}
+
+\subsection{Verbesserungen}
+\begin{itemize}
+  \item Moderne Dash-Imports mit Fallback für ältere Dash-Versionen.
+  \item Dateipfade relativ zur Skriptdatei statt abhängig vom aktuellen Arbeitsverzeichnis.
+  \item Validierung der notwendigen Spalten pro Datensatz.
+  \item Sichere Monatsauswahl und robuste Berechnung der Kennzahlen (ohne fragile Indexzugriffe).
+  \item Bereinigte Plot-Erstellung mit klaren Hilfsfunktionen.
+\end{itemize}
+
+\subsection{Ablaufdiagramm (Python)}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=1.2cm and 1.8cm,
+  block/.style={rectangle, draw, rounded corners, align=center, minimum width=4.8cm, minimum height=0.95cm},
+  line/.style={-Latex, thick}
+]
+\node[block] (csv) {CSV-Dateien laden\\(\texttt{monthly}, \texttt{weekly}, \texttt{store}, \texttt{holiday}, \texttt{dept})};
+\node[block, below=of csv] (validate) {Spalten prüfen und Datentypen harmonisieren};
+\node[block, below=of validate] (ui) {Layout initialisieren\\(Navbar, Dropdowns, Karten)};
+\node[block, below=of ui] (callback) {Callback: \texttt{update\_cards(base, comparison)}};
+\node[block, below left=of callback, xshift=1.2cm] (metrics) {KPI-Berechnung\\Gesamt- und Ferienumsatz};
+\node[block, below right=of callback, xshift=-1.2cm] (plots) {Plot-Berechnung\\Wochenvergleich + Top Stores};
+\node[block, below=of callback, yshift=-2.2cm] (render) {Rückgabe der vier Karten an das Frontend};
+
+\draw[line] (csv) -- (validate);
+\draw[line] (validate) -- (ui);
+\draw[line] (ui) -- (callback);
+\draw[line] (callback) -- (metrics);
+\draw[line] (callback) -- (plots);
+\draw[line] (metrics) -- (render);
+\draw[line] (plots) -- (render);
+\end{tikzpicture}
+\caption{Daten- und Kontrollfluss im Dash-Callback.}
+\end{figure}
+
+\subsection{Visualisierung der Monatsdaten}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1cm,y=0.04cm]
+\draw[->,thick] (0,0) -- (13.6,0) node[right] {Monat};
+\draw[->,thick] (0,0) -- (0,190) node[above] {Umsatz [Mio.]};
+
+\foreach \m/\v [count=\i from 1] in {
+  Jan/78.2,Feb/94.5,Mar/86.2,Apr/108.3,May/84.4,Jun/92.1,
+  Jul/108.6,Aug/94.6,Sep/105.1,Oct/88.9,Nov/113.8,Dec/165.3
+} {
+  \filldraw[fill=blue!45,draw=blue!70!black] (\i-0.33,0) rectangle (\i+0.33,\v);
+  \node[below,rotate=45,anchor=east] at (\i,0) {\scriptsize \m};
+}
+
+\draw[red,thick] plot[smooth] coordinates {
+  (1,0.0) (2,24.1) (3,0.0) (4,0.0) (5,0.0) (6,0.0)
+  (7,0.0) (8,0.0) (9,23.0) (10,0.0) (11,41.2) (12,20.1)
+};
+\foreach \x/\y in {
+  1/0.0,2/24.1,3/0.0,4/0.0,5/0.0,6/0.0,
+  7/0.0,8/0.0,9/23.0,10/0.0,11/41.2,12/20.1
+} {
+  \fill[red] (\x,\y) circle (1.6pt);
+}
+
+\node[blue!70!black] at (10.2,176) {\scriptsize Balken: Gesamtumsatz};
+\node[red!80!black] at (10.2,166) {\scriptsize Linie: Ferienumsatz};
+\end{tikzpicture}
+\caption{Monatsumsatz und Ferienumsatz aus \texttt{monthly\_sales\_df.csv}.}
+\end{figure}
+
+\subsection{Codeauszug (Python)}
+\begin{lstlisting}[style=shared,language=Python]
+from pathlib import Path
+import pandas as pd
+
+BASE_DIR = Path(__file__).resolve().parent
+
+def load_dataframe(file_name: str) -> pd.DataFrame:
+    path = BASE_DIR / file_name
+    df = pd.read_csv(path)
+    unnamed = [c for c in df.columns if str(c).startswith("Unnamed")]
+    if unnamed:
+        df = df.drop(columns=unnamed)
+    return df
+
+def month_metric(month_name: str, column_name: str) -> float:
+    values = monthly_sales_df.loc[monthly_sales_df["Month"] == month_name, column_name]
+    return float(values.iloc[0]) if not values.empty else 0.0
+\end{lstlisting}
+
+\section{Dashboard-02: R/Shiny}
+\subsection{Funktionale Beschreibung}
+Die Shiny-Anwendung lädt Flugdaten, konvertiert Zeitstempel, erlaubt eine Länderselektion und zeigt die wöchentliche Gesamtzahl als Balkendiagramm.
+
+\subsection{Verbesserungen}
+\begin{itemize}
+  \item Robuste Pfadauflösung über Arbeitsverzeichnis und Skriptpfad.
+  \item Konsistente Datumskonvertierung (\texttt{\%Y-\%m-\%dT\%H:\%M:\%SZ}).
+  \item Reaktive Filterung mit Validierung (Hinweis bei leerer Auswahl).
+  \item Verbessertes Plot-Layout (Achsenformatierung, lesbare Datumsbeschriftung, Legende unten).
+\end{itemize}
+
+\subsection{Ablaufdiagramm (R/Shiny)}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=1.15cm and 1.8cm,
+  block/.style={rectangle, draw, rounded corners, align=center, minimum width=4.8cm, minimum height=0.95cm},
+  line/.style={-Latex, thick}
+]
+\node[block] (read) {CSV laden: \texttt{fluege.csv}};
+\node[block, below=of read] (clean) {Datum und numerische Werte bereinigen};
+\node[block, below=of clean] (ui) {UI aufbauen\\(Titel, Checkboxen, Plotbereich)};
+\node[block, below=of ui] (reactive) {Reaktiv: Länderfilter\\\texttt{plot\_df()}};
+\node[block, below=of reactive] (render) {\texttt{renderPlot()} mit \texttt{ggplot2}};
+
+\draw[line] (read) -- (clean);
+\draw[line] (clean) -- (ui);
+\draw[line] (ui) -- (reactive);
+\draw[line] (reactive) -- (render);
+\end{tikzpicture}
+\caption{Reaktiver Ablauf in der Shiny-App.}
+\end{figure}
+
+\subsection{Visualisierung: Durchschnittliche Flüge je Land}
+Die folgende Grafik zeigt die durchschnittliche wöchentliche Fluganzahl je Land (aus \texttt{fluege.csv}, über den gesamten Zeitraum).
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1.6cm,y=0.0002cm]
+\draw[->,thick] (0,0) -- (7.2,0) node[right] {Land};
+\draw[->,thick] (0,0) -- (0,36000) node[above] {Ø Flüge/Woche};
+
+\foreach \l/\v [count=\i from 1] in {
+  Belgium/5425.73,
+  Frankreich/29704.58,
+  Ireland/4403.48,
+  Luxemburg/1194.66,
+  Niederlande/8804.97,
+  UK/31463.48
+} {
+  \filldraw[fill=teal!45,draw=teal!70!black] (\i-0.3,0) rectangle (\i+0.3,\v);
+  \node[below,rotate=20,anchor=east] at (\i,0) {\scriptsize \l};
+}
+\end{tikzpicture}
+\caption{Aggregierte Kennzahl aus den Flugdaten (über den kompletten Datensatz).}
+\end{figure}
+
+\subsection{Codeauszug (R)}
+\begin{lstlisting}[style=shared,language=R]
+flights <- read_csv(resolve_data_path("fluege.csv"), show_col_types = FALSE) %>%
+  mutate(
+    Date = as.Date(Date, format = "%Y-%m-%dT%H:%M:%SZ"),
+    Total = as.numeric(Total)
+  ) %>%
+  filter(!is.na(Date), !is.na(Total)) %>%
+  arrange(Date)
+
+plot_df <- reactive({
+  req(input$land)
+  flights %>% filter(Land %in% input$land)
+})
+\end{lstlisting}
+
+\section{Zusammenfassung}
+Die überarbeitete Version erhöht Stabilität und Lesbarkeit beider Anwendungen deutlich:
+\begin{itemize}
+  \item reproduzierbare Dateipfade und robuste Dateneinleseprozesse,
+  \item sauberere und defensivere Callback-/Reactive-Logik,
+  \item nachvollziehbare, strukturierte Visualisierungslogik,
+  \item klare Dokumentation für Betrieb und Weiterentwicklung.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: dashboard-01
+    runtime: python
+    plan: free
+    rootDir: Dashboard-01
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:server --bind 0.0.0.0:$PORT
+
+  - type: web
+    name: dashboard-02
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dashboard-02/Dockerfile
+    dockerContext: ./Dashboard-02
