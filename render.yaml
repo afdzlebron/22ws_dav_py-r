@@ -3,7 +3,7 @@ services:
     name: dashboard-01
     runtime: python
     plan: free
-    rootDir: improved_20260214_015308/Dashboard-01
+    rootDir: Dashboard-01
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:server --bind 0.0.0.0:$PORT
 
@@ -11,6 +11,6 @@ services:
     name: dashboard-02
     runtime: docker
     plan: free
-    rootDir: improved_20260214_015308/Dashboard-02
+    rootDir: Dashboard-02
     dockerfilePath: Dockerfile
     dockerContext: .
